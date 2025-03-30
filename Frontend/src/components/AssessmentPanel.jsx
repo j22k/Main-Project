@@ -1,20 +1,22 @@
 import React, { useState, useRef, useEffect } from 'react';
-// import axios from 'axios'; // Keep commented out for simulated analysis
-import './AssessmentPanel.css'; // Reuse the CSS file, might need adjustments
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import './AssessmentPanel.css';
+import AssessmentCamera from './AssesmentCamera'; // Import the new camera component
 
 // --- Configuration for Number Comparison ---
 const NUM_COMPARISON_TRIALS = 5;
-const MAX_NUMBER_VALUE = 20; // Slightly reduced max value for younger children
+const MAX_NUMBER_VALUE = 20;
 
 // --- Configuration for Letter Arrangement ---
 const simpleWords = [
     "cat", "dog", "sun", "run", "big", "top", "sit", "man", "bed",
     "red", "pig", "hat", "cup", "pen", "map", "bus", "fly", "sky",
-    "and", "the", "see", "you", "was", "for" // Adding some common sight words
+    "and", "the", "see", "you", "was", "for"
 ];
 
 const DiagnosticAssessmentPanel = () => {
-    // State remains largely the same
+    // Original state variables remain the same
     const [assessmentResults, setAssessmentResults] = useState({
         numberComparison: null,
         handwriting: null,
@@ -24,8 +26,16 @@ const DiagnosticAssessmentPanel = () => {
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState('number-comparison');
     const [handwritingImg, setHandwritingImg] = useState(null);
-    const [assessmentProgress, setAssessmentProgress] = useState('not-started'); // 'not-started', 'number-in-progress', 'number-complete', 'handwriting-in-progress', 'handwriting-complete', 'letter-in-progress', 'complete'
-
+    const [assessmentProgress, setAssessmentProgress] = useState('not-started');
+    const [dataSent, setDataSent] = useState(false);
+    
+    // Add new state for emotion tracking
+    const [emotionData, setEmotionData] = useState([]);
+    const [showCamera, setShowCamera] = useState(true);
+    
+    const navigate = useNavigate();
+    
+    // Original state variables continue...
     const [letterSequence, setLetterSequence] = useState({ original: '', shuffled: [] });
     const [userArrangement, setUserArrangement] = useState([]);
     const [draggedLetter, setDraggedLetter] = useState(null);
@@ -40,15 +50,14 @@ const DiagnosticAssessmentPanel = () => {
     const canvasCtxRef = useRef(null);
     const isDrawing = useRef(false);
 
-    // --- Effects (largely unchanged) ---
-
+    // Original useEffects remain the same
     useEffect(() => {
         if (activeTab === 'handwriting' && canvasRef.current) {
             const canvas = canvasRef.current;
             canvas.width = canvas.offsetWidth;
             canvas.height = canvas.offsetHeight;
             const ctx = canvas.getContext('2d');
-            ctx.lineWidth = 3; // Slightly thicker line might be easier
+            ctx.lineWidth = 3;
             ctx.lineCap = 'round';
             ctx.strokeStyle = '#000000';
             canvasCtxRef.current = ctx;
@@ -75,8 +84,82 @@ const DiagnosticAssessmentPanel = () => {
         }
     }, [assessmentProgress]);
 
-    // --- Number Comparison Logic (unchanged, already relatively simple) ---
+    useEffect(() => {
+        if (assessmentProgress === 'complete' && !dataSent) {
+            sendDataToFlask();
+        }
+    }, [assessmentProgress, dataSent]);
 
+    // Handle emotion capture from camera
+    const handleEmotionCapture = (emotion) => {
+        setEmotionData(prevData => [
+            ...prevData, 
+            {
+                emotion,
+                timestamp: new Date().toISOString(),
+                task: activeTab
+            }
+        ]);
+        
+        // Optional: Show encouragement based on emotion
+        if (emotion.toLowerCase() === 'sad' || emotion.toLowerCase() === 'angry') {
+            // Could show a temporary encouragement message
+            console.log("Detected challenging emotion, providing encouragement");
+        }
+    };
+
+    // Send data to Flask, including emotion data
+    const sendDataToFlask = async () => {
+        try {
+            setIsLoading(true);
+            
+            // Prepare data to send to Flask, now including emotion data
+            const assessmentData = {
+                numberComparison: assessmentResults.numberComparison,
+                handwriting: {
+                    ...assessmentResults.handwriting,
+                    imageData: handwritingImg
+                },
+                letterArrangement: assessmentResults.letterArrangement,
+                emotionTrackingData: emotionData,
+                completedAt: new Date().toISOString()
+            };
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                  console.error('No authentication token found');
+                  navigate('/login');
+                  return;
+                }
+            
+                const response = await axios.post(
+                  'http://localhost:5000/save-assessment',
+                  assessmentData,
+                  {
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${token}`
+                    }
+                  }
+                );
+            
+                if (response.status === 201) {
+                  setDataSent(true);
+                  navigate('/profile');
+                }
+              } catch (error) {
+                console.error('Error submitting assessment:', error);
+              }
+        } catch (error) {
+            console.error('Error sending data to Flask:', error);
+            setError('Could not save your results. Please try again or ask for help.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // All original functions remain the same...
     const generateNumberPair = () => {
         let num1 = Math.floor(Math.random() * MAX_NUMBER_VALUE) + 1;
         let num2 = Math.floor(Math.random() * MAX_NUMBER_VALUE) + 1;
@@ -96,6 +179,7 @@ const DiagnosticAssessmentPanel = () => {
         setCurrentNumberPair(firstPair);
         setNumberTaskStartTime(Date.now());
         setAssessmentProgress('number-in-progress');
+        setDataSent(false);
     };
 
     const handleNumberSelection = (selectedKey) => {
@@ -125,6 +209,7 @@ const DiagnosticAssessmentPanel = () => {
     };
 
     const analyzeNumberComparison = (trials) => {
+        // Original implementation remains the same
         if (!trials || trials.length === 0) {
             setError("No number comparison data to analyze.");
             return;
@@ -138,7 +223,7 @@ const DiagnosticAssessmentPanel = () => {
         const averageResponseTime = totalTrials > 0 ? (totalResponseTime / totalTrials) : 0;
 
         let interpretation = "";
-        if (accuracy >= 80 && averageResponseTime < 2.5) { // Adjusted thresholds slightly
+        if (accuracy >= 80 && averageResponseTime < 2.5) {
             interpretation = "Great job! You're quick and accurate at finding the bigger number.";
         } else if (accuracy >= 60) {
             interpretation = `Good work! You got ${accuracy.toFixed(0)}% right. Sometimes picking the bigger number takes a little extra thought.`;
@@ -167,8 +252,8 @@ const DiagnosticAssessmentPanel = () => {
         setAssessmentProgress('number-complete');
     };
 
-    // --- Handwriting Logic (Updated Prompt & Simulated Analysis) ---
-    const startDrawing = (e) => { /* ... unchanged ... */
+    // Handwriting functions
+    const startDrawing = (e) => {
         const rect = canvasRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
@@ -176,7 +261,8 @@ const DiagnosticAssessmentPanel = () => {
         canvasCtxRef.current.moveTo(x, y);
         isDrawing.current = true;
     };
-    const draw = (e) => { /* ... unchanged ... */
+    
+    const draw = (e) => {
         if (!isDrawing.current) return;
         const rect = canvasRef.current.getBoundingClientRect();
         const x = e.clientX - rect.left;
@@ -184,14 +270,16 @@ const DiagnosticAssessmentPanel = () => {
         canvasCtxRef.current.lineTo(x, y);
         canvasCtxRef.current.stroke();
     };
-    const stopDrawing = () => { /* ... unchanged ... */
+    
+    const stopDrawing = () => {
         if (isDrawing.current) {
             canvasCtxRef.current.closePath();
             isDrawing.current = false;
             setHandwritingImg(canvasRef.current.toDataURL('image/png'));
         }
     };
-    const clearCanvas = () => { /* ... unchanged ... */
+    
+    const clearCanvas = () => {
         if (canvasRef.current) {
             canvasCtxRef.current.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
             setHandwritingImg(null);
@@ -199,6 +287,7 @@ const DiagnosticAssessmentPanel = () => {
     };
 
     const analyzeHandwriting = async () => {
+        // Original implementation remains the same
         if (!handwritingImg) {
             setError("Please draw something first!");
             return;
@@ -207,11 +296,9 @@ const DiagnosticAssessmentPanel = () => {
         setError(null);
 
         try {
-            // --- SIMULATED RESPONSE (Simplified for Child Focus) ---
             console.log("Simulating handwriting analysis (child focus)...");
             await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // Simulate some basic observations
             const characteristics = [];
             const indicators = [];
             const rand = Math.random();
@@ -232,7 +319,7 @@ const DiagnosticAssessmentPanel = () => {
             const simulatedResponse = {
                 taskType: "Handwriting",
                 characteristics: characteristics,
-                indicators: indicators, // Simplified "indicators"
+                indicators: indicators,
                 interpretation: interpretation,
                 suggested_next_steps: [
                     "Practice drawing shapes like circles and squares.",
@@ -252,19 +339,15 @@ const DiagnosticAssessmentPanel = () => {
         }
     };
 
-    // --- Letter Arrangement Logic (Updated Word List & Simulated Analysis) ---
+    // Letter arrangement functions
     const generateLetterArrangementTask = () => {
-        // Use the new simpleWords list
         const selectedWord = simpleWords[Math.floor(Math.random() * simpleWords.length)];
         const letters = selectedWord.split('');
-        // Shuffle the letters
         for (let i = letters.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [letters[i], letters[j]] = [letters[j], letters[i]];
         }
-        // Ensure shuffled is different from original (important for 3-letter words)
         if (letters.join('') === selectedWord && letters.length > 1) {
-             // Simple swap if it happens to be the same
              [letters[0], letters[1]] = [letters[1], letters[0]];
         }
 
@@ -272,14 +355,14 @@ const DiagnosticAssessmentPanel = () => {
             original: selectedWord,
             shuffled: letters
         });
-        setUserArrangement([]); // Reset user arrangement
+        setUserArrangement([]);
     };
 
-    const handleDragStart = (letter, index) => { /* ... unchanged ... */
-         setDraggedLetter({ letter, index });
+    const handleDragStart = (letter, index) => {
+        setDraggedLetter({ letter, index });
     };
 
-    const handleLetterDrop = () => { /* ... unchanged ... */
+    const handleLetterDrop = () => {
         if (draggedLetter) {
             setUserArrangement([...userArrangement, draggedLetter.letter]);
             const newShuffled = [...letterSequence.shuffled];
@@ -292,11 +375,11 @@ const DiagnosticAssessmentPanel = () => {
         }
     };
 
-    const resetArrangement = () => { /* ... unchanged ... */
+    const resetArrangement = () => {
         generateLetterArrangementTask();
     };
 
-    const removeArrangedLetter = (index) => { /* ... unchanged ... */
+    const removeArrangedLetter = (index) => {
         const letterToReturn = userArrangement[index];
         const newArrangement = [...userArrangement];
         newArrangement.splice(index, 1);
@@ -308,6 +391,7 @@ const DiagnosticAssessmentPanel = () => {
     };
 
     const analyzeLetterArrangement = async () => {
+        // Original implementation remains the same
         if (userArrangement.length === 0) {
             setError("Move the letters to make a word first!");
             return;
@@ -320,19 +404,16 @@ const DiagnosticAssessmentPanel = () => {
             const originalWord = letterSequence.original;
             const accuracy = userWord === originalWord;
 
-            // Simple analysis helpers (placeholders for potential future logic)
             const countTranspositions = (user, orig) => {
                 let count = 0;
-                // Simple check for adjacent swaps in short words
-                 if (user.length === orig.length && user.length > 1) {
-                     for (let i = 0; i < user.length - 1; i++) {
-                         if (user[i] === orig[i+1] && user[i+1] === orig[i]) count++;
-                     }
-                 }
+                if (user.length === orig.length && user.length > 1) {
+                    for (let i = 0; i < user.length - 1; i++) {
+                        if (user[i] === orig[i+1] && user[i+1] === orig[i]) count++;
+                    }
+                }
                 return count;
             };
 
-            // SIMULATED RESPONSE (Simplified for Child Focus)
             const interpretation = accuracy
                 ? `Yes! You correctly spelled "${originalWord}". Great job!`
                 : `Good try! The word was "${originalWord}". Putting letters in the right order can be tricky.`;
@@ -341,7 +422,7 @@ const DiagnosticAssessmentPanel = () => {
                 taskType: "Letter Arrangement",
                 input: { original_word: originalWord, user_arrangement: userWord },
                 accuracy: accuracy,
-                letter_sequence_analysis: { // Simplified analysis
+                letter_sequence_analysis: {
                     transpositions: countTranspositions(userWord, originalWord),
                     correct_placement: userWord.split('').filter((l, i) => l === originalWord[i]).length,
                 },
@@ -366,8 +447,9 @@ const DiagnosticAssessmentPanel = () => {
         }
     };
 
-    // --- UI Rendering ---
+    // UI Rendering functions for the tabs
 
+    // Number comparison tab - Original implementation
     const renderNumberComparisonTab = () => (
         <div className="assessment-tab-content number-comparison-tab">
             {assessmentProgress === 'not-started' && (
@@ -381,8 +463,7 @@ const DiagnosticAssessmentPanel = () => {
                     </button>
                 </>
             )}
-            {/* ... rest of number comparison rendering is okay ... */}
-             {assessmentProgress === 'number-in-progress' && currentNumberPair && (
+            {assessmentProgress === 'number-in-progress' && currentNumberPair && (
                 <div className="number-display-area">
                     <p className="trial-counter">Question {currentTrialIndex + 1} of {NUM_COMPARISON_TRIALS}</p>
                     <p className="number-instruction">Click the bigger number:</p>
@@ -405,6 +486,7 @@ const DiagnosticAssessmentPanel = () => {
         </div>
     );
 
+    // Handwriting tab - Original implementation
     const renderHandwritingTab = () => (
         <div className="assessment-tab-content">
             <p className="tab-instructions">
@@ -417,13 +499,12 @@ const DiagnosticAssessmentPanel = () => {
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
                     onMouseUp={stopDrawing}
-                    onMouseLeave={stopDrawing} // Important to stop drawing if mouse leaves canvas
+                    onMouseLeave={stopDrawing}
                 />
                 <div className="canvas-tools">
                     <button className="tool-button" onClick={clearCanvas} disabled={isLoading}>
                         Clear Drawing
                     </button>
-                    {/* Updated Hint */}
                     <p className="canvas-hint">Try drawing a circle, a square, or maybe write the first letter of your name!</p>
                 </div>
             </div>
@@ -447,6 +528,7 @@ const DiagnosticAssessmentPanel = () => {
         </div>
     );
 
+    // Letter arrangement tab - Original implementation
     const renderLetterArrangementTab = () => (
         <div className="assessment-tab-content">
              <p className="tab-instructions">
@@ -455,14 +537,12 @@ const DiagnosticAssessmentPanel = () => {
             <div className="letter-arrangement-container">
                 <div className="letter-task-header">
                     <span>Arrange these letters:</span>
-                     {/* Keep New Word button, maybe less prominent if confusing */}
                      <button className="tool-button" onClick={resetArrangement} disabled={isLoading}>
                          Try a Different Word
                      </button>
                 </div>
                 <div className="letter-bank">
                      {letterSequence.shuffled?.map((letter, index) => (
-                        // Make letters slightly larger/easier to grab if needed via CSS
                         <div key={index} className="letter-tile" draggable onDragStart={() => handleDragStart(letter, index)}>
                             {letter}
                         </div>
@@ -473,7 +553,6 @@ const DiagnosticAssessmentPanel = () => {
                         <span className="drop-placeholder">Drag letters here</span>
                     ) : (
                         userArrangement.map((letter, index) => (
-                            // Click to remove is good for kids who might mis-drop
                             <div key={index} className="arranged-letter" onClick={() => removeArrangedLetter(index)}>
                                 {letter}
                             </div>
@@ -502,202 +581,116 @@ const DiagnosticAssessmentPanel = () => {
         </div>
     );
 
-    // Main tab content renderer (unchanged)
-    const renderTabContent = () => { /* ... unchanged ... */
-        switch(activeTab) {
-            case 'number-comparison': return renderNumberComparisonTab();
-            case 'handwriting': return renderHandwritingTab();
-            case 'letter-arrangement': return renderLetterArrangementTab();
-            default: return renderNumberComparisonTab();
-        }
-    };
-
-    // Get current task results (unchanged)
-     const getCurrentTaskResults = () => { /* ... unchanged ... */
-        switch(activeTab) {
-            case 'number-comparison': return assessmentResults.numberComparison;
-            case 'handwriting': return assessmentResults.handwriting;
-            case 'letter-arrangement': return assessmentResults.letterArrangement;
-            default: return null;
-        }
-    };
-
-    // Render results display (updated content based on simplified analysis)
-    const renderResultsDisplay = () => {
-        const results = getCurrentTaskResults();
-        if (!results || isLoading) return null;
-
-        const taskType = results.taskType || activeTab;
-        const disclaimer = ( // Simplified disclaimer
-            <div className="disclaimer">
-                <p>Remember: This helps us see what you're good at and what we can practice! It's not a test.</p>
-            </div>
-        );
-
-        const renderSection = (title, content) => { /* ... unchanged ... */
-            if (!content) return null;
-            return ( <div className={title.toLowerCase().replace(/ /g, '-') + "-section"}><h4>{title}</h4>{content}</div> );
-        };
-        const renderList = (items) => { /* ... unchanged ... */
-             if (!items || items.length === 0) return <p>Nothing specific noted here.</p>;
-             return <ul>{items.map((item, index) => <li key={index}>{typeof item === 'object' ? `${item.type}: ${item.description}` : item}</li>)}</ul>;
-        };
-
-        let title = "How You Did!";
-        let summaryContent, detailContent, interpretationContent, nextStepsContent;
-
-        if (taskType === 'Number Comparison' && results.summary) {
-            title = "Numbers Result";
-            summaryContent = (<ul><li>Correct Answers: {results.summary.correctCount} out of {results.summary.totalTrials}</li><li>Accuracy: {results.summary.accuracyPercentage}%</li><li>Average Speed: {results.summary.averageResponseTimeSeconds} seconds per question</li></ul>);
-            interpretationContent = <p>{results.interpretation}</p>;
-            nextStepsContent = renderList(results.suggested_next_steps);
-        } else if (taskType === 'Handwriting' && results.characteristics) {
-            title = "Drawing Result";
-             // Combine characteristics and indicators for simpler view
-            summaryContent = renderSection("What We Saw", renderList(results.characteristics));
-            // detailContent = renderSection("Potential Indicators", renderList(results.indicators)); // Maybe omit this section for kids
-            interpretationContent = <p>{results.interpretation}</p>;
-            nextStepsContent = renderList(results.suggested_next_steps);
-        } else if (taskType === 'Letter Arrangement' && results.input) {
-            title = "Word Puzzle Result";
-            summaryContent = (<ul><li>The Word Was: <strong>{results.input.original_word}</strong></li><li>Your Word: <strong>{results.input.user_arrangement}</strong></li><li>Correct?: {results.accuracy ? "Yes!" : "Not quite"}</li></ul>);
-            // detailContent = renderSection("Details", (<ul><li>Letters in right spot: {results.letter_sequence_analysis?.correct_placement ?? 'N/A'}</li></ul>)); // Maybe simplify or omit
-            interpretationContent = <p>{results.interpretation}</p>;
-            nextStepsContent = renderList(results.suggested_next_steps);
-        }
-
-        return (
-            <div className="results-section">
-                <h3>{title}</h3>
-                {disclaimer}
-                {renderSection("Summary", summaryContent)}
-                {/* {renderSection("Details", detailContent)} */}
-                {renderSection("Let's Talk About It", interpretationContent)}
-                {renderSection("Fun Things To Try Next", nextStepsContent)}
-            </div>
-        );
-    };
-
-    // Render comprehensive results (updated language)
-    const renderComprehensiveResults = () => {
+    // Render the Results Summary
+    const renderResultsSummary = () => {
         if (assessmentProgress !== 'complete') return null;
-
-        // Simplified combined interpretation logic
-        let combinedInterpretation = "Looking at all your work: ";
-        let needsPracticeAreas = [];
-        if (assessmentResults.numberComparison && assessmentResults.numberComparison.summary.accuracyPercentage < 70) {
-            needsPracticeAreas.push("comparing numbers");
-        }
-        if (assessmentResults.handwriting && assessmentResults.handwriting.indicators.length > 0) {
-            needsPracticeAreas.push("drawing smooth lines and shapes");
-        }
-        if (assessmentResults.letterArrangement && !assessmentResults.letterArrangement.accuracy) {
-            needsPracticeAreas.push("putting letters in the right order for words");
-        }
-
-        if (needsPracticeAreas.length === 0) {
-             combinedInterpretation += "You showed good skills in numbers, drawing, and word puzzles!";
-        } else {
-             combinedInterpretation += `It looks like practicing ${needsPracticeAreas.join(' and ')} could be helpful. Everyone has things they are learning!`;
-        }
-
-
+        
         return (
-            <div className="comprehensive-results">
-                <h3>All Done! Assessment Summary</h3>
-                <p>You finished all the activities! Here's a quick look:</p>
-
-                <div className="result-summary-cards">
-                    {/* Card content adjusted slightly */}
-                    {assessmentResults.numberComparison && (<div className="result-card"><h4>Numbers</h4><p>Accuracy: {assessmentResults.numberComparison.summary.accuracyPercentage}%</p></div>)}
-                    {assessmentResults.handwriting && (<div className="result-card"><h4>Drawing</h4><p>{assessmentResults.handwriting.interpretation.includes("Good effort") ? "Good effort shown!" : "Practice area noted."}</p></div>)}
-                    {assessmentResults.letterArrangement && (<div className="result-card"><h4>Word Puzzle</h4><p>Word Correct?: {assessmentResults.letterArrangement.accuracy ? "Yes" : "No"}</p></div>)}
-                </div>
-
-                <div className="comprehensive-interpretation">
-                    <h4>Putting It All Together</h4>
-                    <p>{combinedInterpretation}</p>
-                </div>
-
-                <div className="comprehensive-next-steps">
-                     <h4>What's Next?</h4>
-                    <ul>
-                        <li>Share how you did with a grown-up or teacher!</li>
-                        {/* Simplified suggestions */}
-                        {needsPracticeAreas.includes("comparing numbers") && <li>Play counting games or use blocks to compare amounts.</li>}
-                        {needsPracticeAreas.includes("drawing smooth lines and shapes") && <li>Have fun with drawing, play-doh, or tracing!</li>}
-                        {needsPracticeAreas.includes("putting letters in the right order for words") && <li>Use letter magnets or tiles to build simple words.</li>}
-                        <li>Keep learning and having fun!</li>
-                    </ul>
-                </div>
-
-                 {/* Keep download, but rephrase note */}
-                 <div className="download-section">
-                    <button className="download-button">
-                        Download Results Summary
-                    </button>
-                    <p className="download-note">
-                        You can show this summary to your teacher or family.
-                    </p>
-                </div>
+            <div className="results-summary">
+                <h3>Assessment Complete!</h3>
+                
+                {isLoading ? (
+                    <p>Saving your results...</p>
+                ) : dataSent ? (
+                    <p>Results saved! Redirecting to your profile...</p>
+                ) : (
+                    <>
+                        <p>Here's a summary of how you did:</p>
+                        
+                        {assessmentResults.numberComparison && (
+                            <div className="result-section">
+                                <h4>Number Comparison</h4>
+                                <p>{assessmentResults.numberComparison.interpretation}</p>
+                            </div>
+                        )}
+                        
+                        {assessmentResults.handwriting && (
+                            <div className="result-section">
+                                <h4>Handwriting</h4>
+                                <p>{assessmentResults.handwriting.interpretation}</p>
+                            </div>
+                        )}
+                        
+                        {assessmentResults.letterArrangement && (
+                            <div className="result-section">
+                                <h4>Letter Arrangement</h4>
+                                <p>{assessmentResults.letterArrangement.interpretation}</p>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         );
     };
 
-    // --- Main Component Render ---
+    // Main render function for the component
     return (
-        <div className="diagnostic-assessment-panel">
-            {/* Simplified Title and Description */}
-            <h2>Let's Play & Learn!</h2>
-            <p className="panel-description">
-                We'll do three short activities: comparing numbers, drawing, and making words.
-                This helps us see what you're great at and what we can practice together!
-            </p>
-
-            {/* Tabs - Simplified Names & Logic Unchanged */}
-            <div className="assessment-tabs">
-                 <button className={`tab-button ${activeTab === 'number-comparison' ? 'active' : ''}`} onClick={() => assessmentProgress !== 'not-started' && setActiveTab('number-comparison')}>
-                     Numbers
-                 </button>
-                 <button className={`tab-button ${activeTab === 'handwriting' ? 'active' : ''} ${assessmentProgress === 'not-started' || assessmentProgress === 'number-in-progress' ? 'disabled' : ''}`} onClick={() => assessmentProgress !== 'not-started' && assessmentProgress !== 'number-in-progress' && setActiveTab('handwriting')} disabled={assessmentProgress === 'not-started' || assessmentProgress === 'number-in-progress'}>
-                     Drawing
-                 </button>
-                 <button className={`tab-button ${activeTab === 'letter-arrangement' ? 'active' : ''} ${assessmentProgress === 'not-started' || assessmentProgress === 'number-in-progress' || assessmentProgress === 'handwriting-in-progress' ? 'disabled' : ''}`} onClick={() => assessmentProgress !== 'not-started' && assessmentProgress !== 'number-in-progress' && assessmentProgress !== 'handwriting-in-progress' && setActiveTab('letter-arrangement')} disabled={assessmentProgress === 'not-started' || assessmentProgress === 'number-in-progress' || assessmentProgress === 'handwriting-in-progress'}>
-                     Word Puzzle
-                 </button>
-            </div>
-
+        <div className="assessment-panel">
+            <h2>Reading Skills Assessment</h2>
+            
             {error && <div className="error-message">{error}</div>}
-
-            <div className="assessment-content">
-                {renderTabContent()}
-            </div>
-
-            {/* Results Display Logic Unchanged */}
-             {(assessmentProgress === 'number-complete' && activeTab === 'number-comparison') ||
-             (assessmentProgress === 'handwriting-complete' && activeTab === 'handwriting') ||
-             // Show letter arrangement results immediately after submission, even if analysis is pending (optional, but maybe less confusing than waiting)
-             (assessmentProgress === 'complete' && activeTab === 'letter-arrangement') ? ( // Updated condition slightly
-                <div className="results-display">
-                    {renderResultsDisplay()}
-                </div>
-            ) : null}
-
-
-            {assessmentProgress === 'complete' && (
-                <div className="comprehensive-results-container">
-                    {renderComprehensiveResults()}
+            
+            {/* Camera component for emotion tracking */}
+            {showCamera && (
+                <div className="camera-container">
+                    <AssessmentCamera onEmotionCapture={handleEmotionCapture} />
+                    <button 
+                        className="camera-toggle-button"
+                        onClick={() => setShowCamera(false)}
+                    >
+                        Hide Camera
+                    </button>
                 </div>
             )}
-
-            {/* Progress Bar - Simplified Step Names */}
-            <div className="assessment-progress-bar">
-                <div className="progress-label">Your Progress:</div>
-                <div className="progress-steps">
-                    <div className={`progress-step ${assessmentProgress !== 'not-started' ? 'completed' : ''}`}>Numbers</div>
-                    <div className={`progress-step ${assessmentProgress === 'handwriting-complete' || assessmentProgress === 'letter-in-progress' || assessmentProgress === 'complete' ? 'completed' : (assessmentProgress === 'handwriting-in-progress' ? 'active' : '')}`}>Drawing</div>
-                    <div className={`progress-step ${assessmentProgress === 'complete' ? 'completed' : (assessmentProgress === 'letter-in-progress' ? 'active' : '')}`}>Word Puzzle</div>
-                </div>
+            
+            {!showCamera && (
+                <button 
+                    className="camera-toggle-button"
+                    onClick={() => setShowCamera(true)}
+                >
+                    Show Camera
+                </button>
+            )}
+            
+            <div className="assessment-tabs">
+                <button 
+                    className={`tab-button ${activeTab === 'number-comparison' ? 'active' : ''}`}
+                    onClick={() => {
+                        if (assessmentProgress === 'not-started' || assessmentProgress === 'number-in-progress') {
+                            setActiveTab('number-comparison');
+                        }
+                    }}
+                >
+                    1. Numbers
+                </button>
+                <button 
+                    className={`tab-button ${activeTab === 'handwriting' ? 'active' : ''}`}
+                    onClick={() => {
+                        if (assessmentProgress === 'number-complete' || assessmentProgress === 'handwriting-in-progress') {
+                            setActiveTab('handwriting');
+                        }
+                    }}
+                >
+                    2. Drawing
+                </button>
+                <button 
+                    className={`tab-button ${activeTab === 'letter-arrangement' ? 'active' : ''}`}
+                    onClick={() => {
+                        if (assessmentProgress === 'handwriting-complete' || assessmentProgress === 'letter-in-progress') {
+                            setActiveTab('letter-arrangement');
+                        }
+                    }}
+                >
+                    3. Letters
+                </button>
+            </div>
+            
+            <div className="assessment-content">
+                {activeTab === 'number-comparison' && renderNumberComparisonTab()}
+                {activeTab === 'handwriting' && renderHandwritingTab()}
+                {activeTab === 'letter-arrangement' && renderLetterArrangementTab()}
+                
+                {renderResultsSummary()}
             </div>
         </div>
     );
