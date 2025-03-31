@@ -5,6 +5,7 @@ import SignupPage from './components/SignupPage';
 import DashboardPage from './components/DashboardPage';
 import AvatarPage from './components/AvatarPage';
 import ProfilePage from './components/ProfilePage';
+import LearningPage from './components/LearningPage'; // Assuming you have a LearningPage component
 
 // Protected route component
 const ProtectedRoute = ({ children }) => {
@@ -44,6 +45,14 @@ const App = () => {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/learning"
+          element={
+            <ProtectedRoute>
+             <LearningPage />
             </ProtectedRoute>
           }
         />

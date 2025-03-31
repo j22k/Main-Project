@@ -1,0 +1,228 @@
+.adaptive-lesson-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  margin: 20px 0;
+  max-width: 800px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.lesson-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #f0f4ff;
+  padding-bottom: 12px;
+}
+
+.lesson-header h2 {
+  color: #4a5568;
+  margin: 0;
+  font-size: 1.5rem;
+  flex: 1;
+}
+
+.progress-indicator {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.introduction-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  color: #2d3748;
+}
+
+.examples-container {
+  margin: 20px 0;
+}
+
+.examples-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 16px 0;
+}
+
+.example-item {
+  background-color: #f7fafc;
+  border-left: 4px solid #4299e1;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.exercise-container {
+  margin: 20px 0;
+}
+
+.question {
+  font-size: 1.2rem;
+  color: #2d3748;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.options-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.option-button {
+  background-color: #f7fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.option-button:hover {
+  background-color: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.option-button.selected {
+  background-color: #ebf8ff;
+  border-color: #4299e1;
+  color: #2b6cb0;
+}
+
+.action-button, .submit-button {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+}
+
+.action-button:hover, .submit-button:hover {
+  background-color: #3182ce;
+}
+
+.submit-button:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.feedback-container {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.feedback-container p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.feedback-container.success {
+  background-color: #c6f6d5;
+  color: #276749;
+  border-left: 4px solid #38a169;
+}
+
+.feedback-container.error {
+  background-color: #fed7d7;
+  color: #9b2c2c;
+  border-left: 4px solid #e53e3e;
+}
+
+.feedback-container.hint {
+  background-color: #feebc8;
+  color: #7b341e;
+  border-left: 4px solid #ed8936;
+}
+
+/* Audio Controls */
+.audio-controls {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.audio-button {
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.audio-button:hover {
+  background-color: #e2e8f0;
+}
+
+.audio-button.play:hover {
+  color: #3182ce;
+}
+
+.audio-button.pause:hover {
+  color: #e53e3e;
+}
+
+.audio-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.speak-button, .speak-example-button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #4299e1;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.speak-button:hover, .speak-example-button:hover {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+}
+
+/* Animation for speaking indicator */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.audio-controls button:focus-visible, 
+.speak-button:focus-visible, 
+.speak-example-button:focus-visible {
+  outline: 2px solid #4299e1;
+  outline-offset: 2px;
+}

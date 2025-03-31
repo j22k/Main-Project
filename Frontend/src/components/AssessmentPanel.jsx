@@ -626,22 +626,12 @@ const DiagnosticAssessmentPanel = () => {
     // Main render function for the component
     return (
         <div className="assessment-panel">
+            
             <h2>Reading Skills Assessment</h2>
             
             {error && <div className="error-message">{error}</div>}
             
-            {/* Camera component for emotion tracking */}
-            {showCamera && (
-                <div className="camera-container">
-                    <AssessmentCamera onEmotionCapture={handleEmotionCapture} />
-                    <button 
-                        className="camera-toggle-button"
-                        onClick={() => setShowCamera(false)}
-                    >
-                        Hide Camera
-                    </button>
-                </div>
-            )}
+           
             
             {!showCamera && (
                 <button 
@@ -692,6 +682,18 @@ const DiagnosticAssessmentPanel = () => {
                 
                 {renderResultsSummary()}
             </div>
+             {/* Camera component for emotion tracking */}
+             {showCamera && (
+                <div className="camera-container">
+                    <AssessmentCamera onEmotionCapture={handleEmotionCapture} />
+                    <button 
+                        className="camera-toggle-button"
+                        onClick={() => setShowCamera(false)}
+                    >
+                        Hide Camera
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
