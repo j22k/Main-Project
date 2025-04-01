@@ -1,4 +1,4 @@
-#.\venv\Scripts\activate
+
 import os
 import json
 import re

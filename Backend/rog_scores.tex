@@ -1,0 +1,206 @@
+
+\documentclass{article}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+
+\begin{document}
+
+\section{Gemini 2.0 Flash ROG Scores (50 Instances)}
+
+\subsection{Table (Average Scores)}
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lc}
+\toprule
+Metric & Average Score \\
+\midrule
+Relevance & 0.92 \\
+Originality & 0.88 \\
+Groundedness & 0.94 \\
+\bottomrule
+\end{tabular}
+\caption{Average ROG Scores across 50 Instances}
+\label{tab:avg_rog_score}
+\end{table}
+  
+
+\subsection{Graph (Scatter Plot)}
+
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\begin{axis}[
+    xlabel=Instance Number,
+    ylabel=ROG Score,
+    ymin=0.7, ymax=1, % Assuming scores are between 0.7 and 1
+    legend pos=north west,
+]
+\addplot coordinates { (1, 0.93) };
+\addplot coordinates { (2, 0.88) };
+\addplot coordinates { (3, 0.95) };
+\addplot coordinates { (4, 0.90) };
+\addplot coordinates { (5, 0.94) };
+\addplot coordinates { (6, 0.87) };
+\addplot coordinates { (7, 0.94) };
+\addplot coordinates { (8, 0.87) };
+\addplot coordinates { (9, 0.87) };
+\addplot coordinates { (10, 0.97) };
+\addplot coordinates { (11, 0.92) };
+\addplot coordinates { (12, 0.86) };
+\addplot coordinates { (13, 0.89) };
+\addplot coordinates { (14, 0.90) };
+\addplot coordinates { (15, 0.96) };
+\addplot coordinates { (16, 0.95) };
+\addplot coordinates { (17, 0.88) };
+\addplot coordinates { (18, 0.95) };
+\addplot coordinates { (19, 0.97) };
+\addplot coordinates { (20, 0.93) };
+\addplot coordinates { (21, 0.93) };
+\addplot coordinates { (22, 0.88) };
+\addplot coordinates { (23, 0.88) };
+\addplot coordinates { (24, 0.88) };
+\addplot coordinates { (25, 0.88) };
+\addplot coordinates { (26, 0.89) };
+\addplot coordinates { (27, 0.95) };
+\addplot coordinates { (28, 0.94) };
+\addplot coordinates { (29, 0.97) };
+\addplot coordinates { (30, 0.91) };
+\addplot coordinates { (31, 0.93) };
+\addplot coordinates { (32, 0.92) };
+\addplot coordinates { (33, 0.91) };
+\addplot coordinates { (34, 0.92) };
+\addplot coordinates { (35, 0.90) };
+\addplot coordinates { (36, 0.86) };
+\addplot coordinates { (37, 0.93) };
+\addplot coordinates { (38, 0.91) };
+\addplot coordinates { (39, 0.97) };
+\addplot coordinates { (40, 0.93) };
+\addplot coordinates { (41, 0.89) };
+\addplot coordinates { (42, 0.90) };
+\addplot coordinates { (43, 0.97) };
+\addplot coordinates { (44, 0.91) };
+\addplot coordinates { (45, 0.92) };
+\addplot coordinates { (46, 0.90) };
+\addplot coordinates { (47, 0.97) };
+\addplot coordinates { (48, 0.86) };
+\addplot coordinates { (49, 0.93) };
+\addplot coordinates { (50, 0.96) };
+\addlegendentry{Relevance}
+
+\addplot coordinates { (1, 0.95) };
+\addplot coordinates { (2, 0.88) };
+\addplot coordinates { (3, 0.94) };
+\addplot coordinates { (4, 0.87) };
+\addplot coordinates { (5, 0.94) };
+\addplot coordinates { (6, 0.86) };
+\addplot coordinates { (7, 0.91) };
+\addplot coordinates { (8, 0.85) };
+\addplot coordinates { (9, 0.94) };
+\addplot coordinates { (10, 0.84) };
+\addplot coordinates { (11, 0.84) };
+\addplot coordinates { (12, 0.91) };
+\addplot coordinates { (13, 0.87) };
+\addplot coordinates { (14, 0.88) };
+\addplot coordinates { (15, 0.81) };
+\addplot coordinates { (16, 0.91) };
+\addplot coordinates { (17, 0.86) };
+\addplot coordinates { (18, 0.82) };
+\addplot coordinates { (19, 0.89) };
+\addplot coordinates { (20, 0.82) };
+\addplot coordinates { (21, 0.86) };
+\addplot coordinates { (22, 0.88) };
+\addplot coordinates { (23, 0.88) };
+\addplot coordinates { (24, 0.92) };
+\addplot coordinates { (25, 0.86) };
+\addplot coordinates { (26, 0.85) };
+\addplot coordinates { (27, 0.94) };
+\addplot coordinates { (28, 0.93) };
+\addplot coordinates { (29, 0.90) };
+\addplot coordinates { (30, 0.86) };
+\addplot coordinates { (31, 0.87) };
+\addplot coordinates { (32, 0.86) };
+\addplot coordinates { (33, 0.87) };
+\addplot coordinates { (34, 0.94) };
+\addplot coordinates { (35, 0.81) };
+\addplot coordinates { (36, 0.86) };
+\addplot coordinates { (37, 0.85) };
+\addplot coordinates { (38, 0.87) };
+\addplot coordinates { (39, 0.87) };
+\addplot coordinates { (40, 0.84) };
+\addplot coordinates { (41, 0.85) };
+\addplot coordinates { (42, 0.95) };
+\addplot coordinates { (43, 0.88) };
+\addplot coordinates { (44, 0.89) };
+\addplot coordinates { (45, 0.94) };
+\addplot coordinates { (46, 0.92) };
+\addplot coordinates { (47, 0.85) };
+\addplot coordinates { (48, 0.95) };
+\addplot coordinates { (49, 0.88) };
+\addplot coordinates { (50, 0.89) };
+\addlegendentry{Originality}
+
+\addplot coordinates { (1, 0.90) };
+\addplot coordinates { (2, 0.97) };
+\addplot coordinates { (3, 0.88) };
+\addplot coordinates { (4, 0.95) };
+\addplot coordinates { (5, 0.93) };
+\addplot coordinates { (6, 0.91) };
+\addplot coordinates { (7, 0.95) };
+\addplot coordinates { (8, 0.91) };
+\addplot coordinates { (9, 0.96) };
+\addplot coordinates { (10, 0.93) };
+\addplot coordinates { (11, 0.98) };
+\addplot coordinates { (12, 0.94) };
+\addplot coordinates { (13, 0.91) };
+\addplot coordinates { (14, 0.88) };
+\addplot coordinates { (15, 0.92) };
+\addplot coordinates { (16, 0.95) };
+\addplot coordinates { (17, 0.90) };
+\addplot coordinates { (18, 0.93) };
+\addplot coordinates { (19, 0.96) };
+\addplot coordinates { (20, 0.95) };
+\addplot coordinates { (21, 0.98) };
+\addplot coordinates { (22, 0.95) };
+\addplot coordinates { (23, 0.92) };
+\addplot coordinates { (24, 0.99) };
+\addplot coordinates { (25, 0.93) };
+\addplot coordinates { (26, 0.97) };
+\addplot coordinates { (27, 0.99) };
+\addplot coordinates { (28, 0.94) };
+\addplot coordinates { (29, 0.94) };
+\addplot coordinates { (30, 0.96) };
+\addplot coordinates { (31, 0.97) };
+\addplot coordinates { (32, 0.92) };
+\addplot coordinates { (33, 0.99) };
+\addplot coordinates { (34, 0.92) };
+\addplot coordinates { (35, 0.95) };
+\addplot coordinates { (36, 0.93) };
+\addplot coordinates { (37, 0.94) };
+\addplot coordinates { (38, 0.95) };
+\addplot coordinates { (39, 0.98) };
+\addplot coordinates { (40, 0.89) };
+\addplot coordinates { (41, 0.89) };
+\addplot coordinates { (42, 0.90) };
+\addplot coordinates { (43, 0.97) };
+\addplot coordinates { (44, 0.93) };
+\addplot coordinates { (45, 0.92) };
+\addplot coordinates { (46, 0.95) };
+\addplot coordinates { (47, 0.89) };
+\addplot coordinates { (48, 0.90) };
+\addplot coordinates { (49, 0.95) };
+\addplot coordinates { (50, 0.97) };
+\addlegendentry{Groundedness}
+
+
+\end{axis}
+\end{tikzpicture}
+\caption{ROG Scores for 50 Instances}
+\label{fig:scatter_rog_scores}
+\end{figure}
+
+
+\end{document}
